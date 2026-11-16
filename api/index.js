@@ -1,4 +1,6 @@
 import express from 'express';
+import AppError from './utils/AppError.js';
+import manejarErrores from './middlewares/error.middleware.js';
 
 const app = express();
 
@@ -14,6 +16,14 @@ app.get('/api/health', (req, res) => {
         mensaje: 'API MiniAula funcionando correctamente'
     });
 });
+
+// Manejar rutas que no existen
+app.use((req, res, next) => {
+    next(new AppError('Ruta no encontrada', 404));
+});
+
+// Middleware centralizado de errores
+app.use(manejarErrores);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
