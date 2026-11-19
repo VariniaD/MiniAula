@@ -9,11 +9,18 @@ const manejarErrores = (error, req, res, next) => {
     }
 
     // Obtener el código de error
-    const statusCode = error instanceof AppError
+    let statusCode = error instanceof AppError
         ? error.statusCode
         : (error.status >= 400 && error.status < 600
             ? error.status
             : 500);
+
+    // Manejar errores comunes de Sequelize
+    if (error.name === 'SequelizeUniqueConstraintError') {
+        statusCode = 409;
+    } else if (error.name === 'SequelizeValidationError') {
+        statusCode = 400;
+    }
 
     // Evitar mostrar detalles internos del servidor
     const mensaje = statusCode === 500
@@ -24,10 +31,15 @@ const manejarErrores = (error, req, res, next) => {
         console.error(error);
     }
 
-    // Responder en formato JSON
+    const details = error.detalles || error.details || [];
+
+    // Responder en formato JSON { error: { code, message, details } }
     return res.status(statusCode).json({
-        mensaje,
-        errores: error.detalles || []
+        error: {
+            code: error.code || statusCode,
+            message: mensaje,
+            details
+        }
     });
 };
 

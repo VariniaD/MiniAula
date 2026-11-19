@@ -17,11 +17,15 @@ const obtenerClave = () => {
     return process.env.JWT_SECRET;
 };
 
-// Generar un token para un usuario
-const generarToken = (usuarioId) => {
+// Generar un token para un usuario con id y rol
+const generarToken = (usuario, rolParam = null) => {
+
+    const payload = typeof usuario === 'object' && usuario !== null
+        ? { id: usuario.id, ...(usuario.rol ? { rol: usuario.rol } : {}) }
+        : { id: usuario, ...(rolParam ? { rol: rolParam } : {}) };
 
     return jwt.sign(
-        { id: usuarioId },
+        payload,
         obtenerClave(),
         {
             algorithm: 'HS256',
