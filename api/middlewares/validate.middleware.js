@@ -11,9 +11,11 @@ const validar = (esquema) => {
         if (!resultado.success) {
 
             // Obtener los errores de validación
-            const errores = resultado.error.issues.map((error) => ({
-                campo: error.path.join('.'),
-                mensaje: error.message
+            const errores = resultado.error.issues.map((issue) => ({
+                campo: issue.path.join('.'),
+                mensaje: issue.message,
+                field: issue.path.join('.'),
+                message: issue.message
             }));
 
             return next(

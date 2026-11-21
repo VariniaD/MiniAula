@@ -1,6 +1,7 @@
 import express from 'express';
 import AppError from './utils/AppError.js';
 import manejarErrores from './middlewares/error.middleware.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -9,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 
 // Permite recibir datos en formato JSON
 app.use(express.json());
+
+// Rutas de autenticación
+app.use('/api/auth', authRoutes);
 
 // Ruta de prueba para verificar que funciona la API
 app.get('/api/health', (req, res) => {
@@ -25,7 +29,11 @@ app.use((req, res, next) => {
 // Middleware centralizado de errores
 app.use(manejarErrores);
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor funcionando en http://localhost:${PORT}`);
-});
+// Iniciar el servidor si se ejecuta directamente
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`Servidor funcionando en http://localhost:${PORT}`);
+    });
+}
+
+export default app;
