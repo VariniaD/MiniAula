@@ -3,6 +3,7 @@ import AppError from './utils/AppError.js';
 import manejarErrores from './middlewares/error.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import cursoRoutes from './routes/curso.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const app = express();
 
@@ -14,6 +15,9 @@ app.use(express.json());
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
+
+// Rutas de perfil de usuario
+app.use('/api/users', userRoutes);
 
 // Rutas de cursos
 app.use('/api/cursos', cursoRoutes);

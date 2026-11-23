@@ -102,6 +102,49 @@ Respuesta HTTP 200:
 
 El token permite autenticar las solicitudes posteriores.
 
+### 3.4 Consultar el propio perfil
+
+**Método:** GET  
+**Ruta:** `/api/users/me`  
+**Acceso:** usuario autenticado (`Authorization: Bearer <TOKEN_JWT>`)
+
+Respuesta HTTP 200:
+
+```json
+{
+  "id": 1,
+  "nombre": "Usuario Prueba",
+  "email": "usuario@example.com",
+  "rol": "estudiante",
+  "creadoEn": "2026-11-22T20:00:00.000Z"
+}
+```
+
+Errores: 401 si el token falta, es inválido o está vencido.
+
+### 3.5 Editar el propio perfil
+
+**Método:** PUT  
+**Ruta:** `/api/users/me`  
+**Acceso:** usuario autenticado (`Authorization: Bearer <TOKEN_JWT>`)
+
+Datos de entrada (al menos un campo; no se permiten otros campos como `rol` o `password`):
+
+```json
+{
+  "nombre": "Nuevo Nombre",
+  "email": "nuevo@example.com"
+}
+```
+
+Respuesta HTTP 200: el usuario actualizado con la misma estructura de la sección 3.4.
+
+Errores:
+
+- 400 si los datos son inválidos o el body está vacío.
+- 401 si el token falta, es inválido o está vencido.
+- 409 si el nuevo email ya pertenece a otro usuario.
+
 ## 4. Contrato de errores
 
 Los errores del backend utilizan la siguiente estructura:
@@ -195,7 +238,7 @@ Las rutas definitivas se confirmarán durante la implementación de los servicio
 
 ## 9. Estado de la documentación
 
-**Implementado:** verificación del servidor, registro, login y manejo centralizado de errores.
+**Implementado:** verificación del servidor, registro, login, consulta y edición del perfil (`/api/users/me`) y manejo centralizado de errores.
 
 **Propuesto:** contrato de paginación y rutas de cursos.
 
