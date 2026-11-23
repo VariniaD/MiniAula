@@ -48,3 +48,36 @@ export const editarCurso = async (id, datos, instructorId) => {
 
     return cursoActualizado;
 };
+
+// Obtener los cursos del instructor autenticado
+export const listarCursosInstructor = async (
+    instructorId,
+    filtros
+) => {
+
+    const { page, limit, estado } = filtros;
+
+    // Consultar los cursos y contar los resultados
+    const resultado = await cursoRepository.listarPorInstructor(
+        instructorId,
+        page,
+        limit,
+        estado
+    );
+
+    // Calcular el número total de páginas
+    const totalPaginas = Math.ceil(resultado.count / limit);
+
+    // Preparar la respuesta
+    return {
+        datos: resultado.rows,
+
+        paginacion: {
+            pagina: page,
+            limite: limit,
+            total: resultado.count,
+            totalPaginas
+        }
+    };
+
+};

@@ -3,6 +3,7 @@ import AppError from './utils/AppError.js';
 import manejarErrores from './middlewares/error.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import cursoRoutes from './routes/curso.routes.js';
+import instructorRoutes from './routes/instructor.routes.js';
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.use('/api/auth', authRoutes);
 
 // Rutas de cursos
 app.use('/api/cursos', cursoRoutes);
+
+// Rutas exclusivas del instructor
+app.use('/api/instructor', instructorRoutes);
 
 // Ruta de prueba para verificar que funciona la API
 app.get('/api/health', (req, res) => {
