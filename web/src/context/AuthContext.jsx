@@ -3,71 +3,94 @@ import {
   AUTH_UNAUTHORIZED_EVENT,
   TOKEN_STORAGE_KEY,
   USER_STORAGE_KEY,
+  clearStoredSession,
+  loginRequest,
+  registerRequest,
 } from '../services/api';
 
 export const AuthContext = createContext(null);
 
-function readStoredUser() {
+// Leer el campo "exp" del JWT para descartar sesiones vencidas al recargar
+function isTokenExpired(token) {
   try {
-    const raw = localStorage.getItem(USER_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now();
   } catch {
-    localStorage.removeItem(USER_STORAGE_KEY);
-    return null;
+    return true;
   }
 }
 
-function readStoredToken() {
+// Recuperar la sesión guardada en localStorage (sobrevive a F5)
+function readStoredSession() {
   try {
-    return localStorage.getItem(TOKEN_STORAGE_KEY) || null;
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const rawUser = localStorage.getItem(USER_STORAGE_KEY);
+
+    if (!token || !rawUser || isTokenExpired(token)) {
+      clearStoredSession();
+      return { token: null, user: null };
+    }
+
+    return { token, user: JSON.parse(rawUser) };
   } catch {
-    return null;
+    clearStoredSession();
+    return { token: null, user: null };
   }
+}
+
+function persistSession(user, token) {
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readStoredUser);
-  const [token, setToken] = useState(readStoredToken);
+  const [session, setSession] = useState(readStoredSession);
+  const { user, token } = session;
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    setToken(null);
-    setUser(null);
+    clearStoredSession();
+    setSession({ token: null, user: null });
   }, []);
 
-  const login = useCallback((userData, authToken) => {
-    if (!userData || !authToken) return;
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
-    localStorage.setItem(TOKEN_STORAGE_KEY, authToken);
-    setUser(userData);
-    setToken(authToken);
+  // Autenticar contra la API y guardar la sesión
+  const login = useCallback(async (credentials) => {
+    const { token: authToken, usuario } = await loginRequest(credentials);
+    persistSession(usuario, authToken);
+    setSession({ token: authToken, user: usuario });
+    return usuario;
   }, []);
 
-  const updateUser = useCallback((updatedUser) => {
-    if (!updatedUser) return;
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-    setUser(updatedUser);
-  }, []);
+  // Registrar un usuario y abrir sesión automáticamente con sus credenciales
+  const register = useCallback(
+    async (datos) => {
+      await registerRequest(datos);
+      return login({ email: datos.email, password: datos.password });
+    },
+    [login]
+  );
 
-  // Sincronizar cierre de sesión cuando la API devuelve 401 o cambia localStorage en otra pestaña
+  const updateUser = useCallback(
+    (updatedUser) => {
+      if (!updatedUser || !token) return;
+      persistSession(updatedUser, token);
+      setSession((prev) => ({ ...prev, user: updatedUser }));
+    },
+    [token]
+  );
+
+  // Sincronizar cierre de sesión ante un 401 de la API o cambios en otra pestaña
   useEffect(() => {
-    const handleUnauthorized = () => {
-      logout();
-    };
-
     const handleStorageChange = (event) => {
       if (event.key === TOKEN_STORAGE_KEY || event.key === USER_STORAGE_KEY) {
-        setToken(readStoredToken());
-        setUser(readStoredUser());
+        setSession(readStoredSession());
       }
     };
 
-    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, logout);
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, logout);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, [logout]);
@@ -79,13 +102,13 @@ export function AuthProvider({ children }) {
       user,
       token,
       login,
+      register,
       logout,
       updateUser,
       isAuthenticated,
     }),
-    [user, token, login, logout, updateUser, isAuthenticated]
+    [user, token, login, register, logout, updateUser, isAuthenticated]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
