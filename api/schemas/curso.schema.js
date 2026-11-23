@@ -37,3 +37,40 @@ export const editarCursoSchema = z
         (datos) => Object.keys(datos).length > 0,
         'Debes proporcionar al menos un campo para actualizar'
     );
+
+// Tratar cadenas vacías en query string como undefined
+const vacioAUndefined = (valor) => (valor === '' || valor === undefined ? undefined : valor);
+
+// Validar los parámetros de consulta del catálogo público
+export const listarCursosQuerySchema = z.object({
+
+    q: z.preprocess(
+        vacioAUndefined,
+        z.string().trim().max(100, 'La busqueda no puede superar los 100 caracteres').optional()
+    ),
+
+    categoria: z.preprocess(
+        vacioAUndefined,
+        z.string().trim().max(100, 'La categoria no puede superar los 100 caracteres').optional()
+    ),
+
+    page: z.preprocess(
+        vacioAUndefined,
+        z.coerce
+            .number({ error: 'page debe ser un numero entero' })
+            .int('page debe ser un numero entero')
+            .min(1, 'page debe ser mayor o igual a 1')
+            .default(1)
+    ),
+
+    limit: z.preprocess(
+        vacioAUndefined,
+        z.coerce
+            .number({ error: 'limit debe ser un numero entero' })
+            .int('limit debe ser un numero entero')
+            .min(1, 'limit debe ser mayor o igual a 1')
+            .max(50, 'limit no puede superar 50')
+            .default(10)
+    )
+
+});

@@ -1,12 +1,12 @@
 import AppError from '../utils/AppError.js';
 
-// Middleware para validar los datos recibidos
-const validar = (esquema) => {
+// Middleware para validar los datos recibidos (body, query o params)
+const validar = (esquema, fuente = 'body') => {
 
     return (req, res, next) => {
 
         // Validar los datos utilizando Zod
-        const resultado = esquema.safeParse(req.body);
+        const resultado = esquema.safeParse(req[fuente]);
 
         if (!resultado.success) {
 
@@ -23,8 +23,14 @@ const validar = (esquema) => {
             );
         }
 
-        // Guardar los datos validados
-        req.body = resultado.data;
+        // Guardar los datos validados (en Express 5 req.query es solo lectura)
+        if (fuente === 'body') {
+            req.body = resultado.data;
+        } else if (fuente === 'query') {
+            req.queryValidada = resultado.data;
+        } else if (fuente === 'params') {
+            req.paramsValidados = resultado.data;
+        }
 
         next();
     };
