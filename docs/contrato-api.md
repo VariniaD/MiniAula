@@ -248,6 +248,51 @@ Respuesta HTTP 200 (devuelve únicamente las inscripciones del estudiante autent
     }
   }
 ]
+
+### 3.8 Consultar el propio perfil
+
+**Método:** GET<br>
+**Ruta:** `/api/users/me`<br>
+**Acceso:** usuario autenticado
+
+Respuesta HTTP 200:
+
+```json
+{
+  "id": 1,
+  "nombre": "Usuario Prueba",
+  "email": "usuario@example.com",
+  "rol": "estudiante",
+  "creadoEn": "2026-11-22T20:00:00.000Z"
+}
+```
+
+Errores:
+
+- 401 si el token falta, es inválido o está vencido.
+
+### 3.9 Editar el propio perfil
+
+**Método:** PUT<br>
+**Ruta:** `/api/users/me`<br>
+**Acceso:** usuario autenticado
+
+Datos de entrada (al menos un campo; no se permiten otros campos como `rol` o `password`):
+
+```json
+{
+  "nombre": "Nuevo Nombre",
+  "email": "nuevo@example.com"
+}
+```
+
+Respuesta HTTP 200: el usuario actualizado con la misma estructura de la sección 3.8.
+
+Errores:
+
+- 400 si los datos son inválidos o el body está vacío.
+- 401 si el token falta, es inválido o está vencido.
+- 409 si el nuevo email ya pertenece a otro usuario.
 ```
 
 Errores:
@@ -347,8 +392,7 @@ Las rutas definitivas se confirmarán durante la implementación de los servicio
 7. Los endpoints futuros deben documentarse al implementarse.
 
 ## 9. Estado de la documentación
-
-**Implementado:** verificación del servidor, registro, login, catálogo público, detalle público de curso, inscripción sin duplicados, listado de mis inscripciones con avance y manejo centralizado de errores.
+**Implementado:** verificación del servidor, registro, login, consulta y edición del perfil (`/api/users/me`), catálogo público, detalle público de cursos, inscripción sin duplicados, listado de mis inscripciones con avance y manejo centralizado de errores.
 
 **Propuesto:** contrato de paginación y rutas de cursos.
 

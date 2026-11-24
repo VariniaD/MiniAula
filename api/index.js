@@ -1,14 +1,43 @@
 import express from 'express';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
 import AppError from './utils/AppError.js';
 import manejarErrores from './middlewares/error.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import cursoRoutes from './routes/curso.routes.js';
 import inscripcionRoutes from './routes/inscripcion.routes.js';
+import userRoutes from './routes/user.routes.js';
+import instructorRoutes from './routes/instructor.routes.js';
+
+// Cargar las variables del archivo .env de la raíz
+dotenv.config({
+    path: fileURLToPath(new URL('../.env', import.meta.url))
+});
 
 const app = express();
 
 // Puerto donde funcionará nuestro backend
 const PORT = process.env.PORT || 3000;
+
+// Origen permitido para el frontend
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+
+// Cabeceras de seguridad HTTP
+app.use(helmet());
+
+// Configuración CORS restringida al origen del frontend
+app.use(cors({
+    origin: corsOrigin,
+    credentials: true
+}));
+
+// Registro de peticiones HTTP
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
 
 // Permite recibir datos en formato JSON
 app.use(express.json());
@@ -16,11 +45,16 @@ app.use(express.json());
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
 
+// Rutas de perfil de usuario
+app.use('/api/users', userRoutes);
+
 // Rutas de cursos
 app.use('/api/cursos', cursoRoutes);
 
 // Rutas de inscripciones
 app.use('/api/inscripciones', inscripcionRoutes);
+// Rutas exclusivas del instructor
+app.use('/api/instructor', instructorRoutes);
 
 // Ruta de prueba para verificar que funciona la API
 app.get('/api/health', (req, res) => {

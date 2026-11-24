@@ -61,6 +61,29 @@ export const listarCatalogo = async (req, res, next) => {
         next(error);
     }
 };
+// Listar cursos del instructor
+export const listarCursosInstructor = async (req, res, next) => {
+
+    try {
+
+        // Obtener el ID desde el usuario autenticado
+        const instructorId = req.usuario.id;
+
+        // Obtener los filtros previamente validados
+        const filtros = req.filtrosCursos;
+
+        // Consultar los cursos del instructor
+        const resultado = await cursoService.listarCursosInstructor(
+            instructorId,
+            filtros
+        );
+
+        return res.status(200).json(resultado);
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 // Consultar detalle público de un curso publicado con su temario
 export const obtenerDetallePublico = async (req, res, next) => {
