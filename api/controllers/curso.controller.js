@@ -46,6 +46,21 @@ export const editarCurso = async (req, res, next) => {
     }
 };
 
+// Listar catálogo público de cursos publicados
+export const listarCatalogo = async (req, res, next) => {
+
+    try {
+
+        const resultado = await cursoService.listarCatalogo(
+            req.queryValidada || req.query
+        );
+
+        return res.status(200).json(resultado);
+
+    } catch (error) {
+        next(error);
+    }
+};
 // Listar cursos del instructor
 export const listarCursosInstructor = async (req, res, next) => {
 
@@ -66,9 +81,22 @@ export const listarCursosInstructor = async (req, res, next) => {
         return res.status(200).json(resultado);
 
     } catch (error) {
-
         next(error);
-
     }
+};
 
+// Consultar detalle público de un curso publicado con su temario
+export const obtenerDetallePublico = async (req, res, next) => {
+
+    try {
+
+        const { id } = req.params;
+
+        const curso = await cursoService.obtenerDetallePublico(id);
+
+        return res.status(200).json(curso);
+
+    } catch (error) {
+        next(error);
+    }
 };

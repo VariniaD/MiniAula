@@ -8,6 +8,7 @@ import AppError from './utils/AppError.js';
 import manejarErrores from './middlewares/error.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import cursoRoutes from './routes/curso.routes.js';
+import inscripcionRoutes from './routes/inscripcion.routes.js';
 import userRoutes from './routes/user.routes.js';
 import instructorRoutes from './routes/instructor.routes.js';
 
@@ -50,6 +51,8 @@ app.use('/api/users', userRoutes);
 // Rutas de cursos
 app.use('/api/cursos', cursoRoutes);
 
+// Rutas de inscripciones
+app.use('/api/inscripciones', inscripcionRoutes);
 // Rutas exclusivas del instructor
 app.use('/api/instructor', instructorRoutes);
 

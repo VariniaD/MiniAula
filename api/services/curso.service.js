@@ -49,6 +49,85 @@ export const editarCurso = async (id, datos, instructorId) => {
     return cursoActualizado;
 };
 
+// Formatear los datos públicos del instructor
+const formatearInstructor = (instructor) => (
+    instructor
+        ? { id: instructor.id, nombre: instructor.nombre }
+        : null
+);
+
+// Consultar el catálogo público de cursos publicados 
+export const listarCatalogo = async ({ q, categoria, page = 1, limit = 10 }) => {
+
+    const { rows, count } = await cursoRepository.listarPublicados({
+        q,
+        categoria,
+        page,
+        limit
+    });
+
+    const datos = rows.map((curso) => ({
+        id: curso.id,
+        titulo: curso.titulo,
+        descripcion: curso.descripcion,
+        categoria: curso.categoria,
+        nivel: curso.nivel,
+        estado: curso.estado,
+        creadoEn: curso.creadoEn,
+        instructor: formatearInstructor(curso.instructor),
+        totalLecciones: Array.isArray(curso.lecciones) ? curso.lecciones.length : 0
+    }));
+
+    return {
+        datos,
+        paginacion: {
+            pagina: page,
+            limite: limit,
+            total: count,
+            totalPaginas: count === 0 ? 0 : Math.ceil(count / limit)
+        }
+    };
+};
+
+// Consultar el detalle público de un curso publicado y su temario 
+export const obtenerDetallePublico = async (id) => {
+
+    const cursoId = Number(id);
+
+    if (!Number.isInteger(cursoId) || cursoId <= 0) {
+        throw new AppError('ID de curso invalido', 400);
+    }
+
+    const curso = await cursoRepository.buscarPublicadoConTemario(cursoId);
+
+    if (!curso) {
+        throw new AppError('Curso no encontrado', 404);
+    }
+
+    const lecciones = Array.isArray(curso.lecciones)
+        ? [...curso.lecciones]
+            .sort((a, b) => a.orden - b.orden)
+            .map((leccion) => ({
+                id: leccion.id,
+                titulo: leccion.titulo,
+                tipo: leccion.tipo,
+                orden: leccion.orden
+            }))
+        : [];
+
+    return {
+        id: curso.id,
+        titulo: curso.titulo,
+        descripcion: curso.descripcion,
+        categoria: curso.categoria,
+        nivel: curso.nivel,
+        estado: curso.estado,
+        creadoEn: curso.creadoEn,
+        instructor: formatearInstructor(curso.instructor),
+        lecciones
+    };
+
+};
 // Obtener los cursos del instructor autenticado
 export const listarCursosInstructor = async (
     instructorId,

@@ -22,4 +22,3 @@ export const buscarPorEmail = async (email) => {
 export const actualizar = async (usuario, datos) => {
     return await usuario.update(datos);
 };
-

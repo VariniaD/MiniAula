@@ -50,4 +50,3 @@ export function useFetch(fetcher, deps = []) {
 }
 
 export default useFetch;
-

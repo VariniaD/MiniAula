@@ -62,4 +62,3 @@ export const actualizarPerfil = async (usuarioId, { nombre, email }) => {
 
     return formatearUsuario(usuarioActualizado);
 };
-

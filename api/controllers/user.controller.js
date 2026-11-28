@@ -30,4 +30,3 @@ export const actualizarPerfil = async (req, res, next) => {
         next(error);
     }
 };
-

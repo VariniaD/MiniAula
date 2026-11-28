@@ -19,4 +19,3 @@ const loginRateLimiter = rateLimit({
 });
 
 export default loginRateLimiter;
-

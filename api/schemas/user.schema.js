@@ -23,4 +23,3 @@ export const actualizarPerfilSchema = z
         (datos) => Object.keys(datos).length > 0,
         'Debes proporcionar al menos un campo para actualizar'
     );
-
